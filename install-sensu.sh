@@ -213,9 +213,9 @@ install_sensu_metrics_relay() {
     cp examples/relay.json.example /etc/sensu/conf.d/relay.json
 }
 
-# generate_ssl_certificate
-# install_rabbitmq
-# install_redis
+generate_ssl_certificate
+install_rabbitmq
+install_redis
 install_sensu
 install_uchiwa
 install_sensu_metrics_relay
