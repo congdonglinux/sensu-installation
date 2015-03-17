@@ -35,6 +35,22 @@ resolve_dependency() {
             apt-get install -y memcached
         ;;
         'CENTOS')
+            yum install -y python-pip 
+            yum install -y httpd httpd-devel mod_wsgi
+            yum install -y python-devel
+
+            # Manually install mod_python
+            wget http://dist.modpython.org/dist/mod_python-3.5.0.tgz
+            tar xzf mod_python-3.5.0.tgz
+            cd mod_python-3.5.0
+            ./configure
+            make
+            make install
+
+            yum install -y openldap-devel cyrus-sasl-devel openssl-devel
+            yum install -y cairo-devel
+            yum install -y rrdtool-devel
+            yum install -y gcc gcc-c++
         ;;
     esac
 
@@ -121,12 +137,12 @@ configure_graphite() {
 }
 
 configure_carbon() {
-    cp carbon.sh /etc/init.d/
+    cp examples/carbon.sh.example /etc/init.d/carbon.sh
     chmod 755 /etc/init.d/carbon.sh
     update-rc.d carbon.sh defaults
 }
 
 resolve_dependency
-install_graphite
-configure_graphite
-configure_carbon
+# install_graphite
+# configure_graphite
+# configure_carbon
