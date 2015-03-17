@@ -1,2 +1,2 @@
 # sensu-installation
-bash scripts for sensu installation on both centos &amp; ubuntu
+bash scripts for sensu & graphite installation on both centos &amp; ubuntu

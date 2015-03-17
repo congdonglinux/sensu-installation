@@ -1,0 +1,22 @@
+# !/bin/sh
+ 
+case "$1" in
+  start)
+    echo "Starting carbon"
+    /opt/graphite/bin/carbon-relay.py start
+    /opt/graphite/bin/carbon-cache.py start
+    /opt/graphite/bin/carbon-aggregator.py start
+    ;;
+  stop)
+    echo "Stopping carbon"
+    /opt/graphite/bin/carbon-relay.py stop
+    /opt/graphite/bin/carbon-cache.py stop
+    /opt/graphite/bin/carbon-aggregator.py stop
+    ;;
+  *)
+    echo "Usage: /opt/graphite/bin/carbon-aggregator.py {start|stop|status}"
+    exit 1
+    ;;
+esac
+ 
+exit 0
