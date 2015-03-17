@@ -52,7 +52,7 @@ install_rabbitmq() {
     mkdir -p /etc/rabbitmq/ssl
     cp ssl_certs/{sensu_ca/cacert.pem,server/cert.pem,server/key.pem} /etc/rabbitmq/ssl
 
-    cp rabbitmq.config.example /etc/rabbitmq/rabbitmq.config
+    cp examples/rabbitmq.config.example /etc/rabbitmq/rabbitmq.config
     chmod a+r /etc/rabbitmq/rabbitmq.config
 
     # Start RabbitMQ server
@@ -115,7 +115,7 @@ install_sensu() {
             apt-get install -y sensu
         ;;
         'CENTOS')
-            cp sensu.repo.example /etc/yum.repos.d/sensu.repo
+            cp examples/sensu.repo.example /etc/yum.repos.d/sensu.repo
 
             # Sensu only support Centos 5 and Centos 6
             if [ $CENTOS_VERSION == 7 ]; then
@@ -124,6 +124,8 @@ install_sensu() {
 
             sed -i "s/\$releasever/${CENTOS_VERSION}/g" /etc/yum.repos.d/sensu.repo
             sed -i "s/\$basearch/${KERNELARCH}/g" /etc/yum.repos.d/sensu.repo
+
+            yum install -y sensu
         ;;
     esac
 
@@ -132,7 +134,7 @@ install_sensu() {
     chmod a+r /etc/sensu/ssl/*
 
     # Create RabbitMQ configuration for Sensu
-    cp rabbitmq.json.example /etc/sensu/conf.d/rabbitmq.json
+    cp examples/rabbitmq.json.example /etc/sensu/conf.d/rabbitmq.json
     sed -i 's/\"host\": \".*\"/\"host\": \"localhost\"/g' /etc/sensu/conf.d/rabbitmq.json
     sed -i 's/\"user\": \".*\"/\"user\": \"'$RABBITMQ_USER\"/g /etc/sensu/conf.d/rabbitmq.json
     sed -i 's/\"password\": \".*\"/\"password\": \"'$RABBITMQ_PASSWORD\"/g /etc/sensu/conf.d/rabbitmq.json
@@ -141,13 +143,13 @@ install_sensu() {
 
     # Create client configuration file
     # TODO: tweak client configuration content
-    cp client.json.example /etc/sensu/conf.d/client.json
+    cp examples/client.json.example /etc/sensu/conf.d/client.json
 
     # Create Redis configuration file
-    cp redis.json.example /etc/sensu/conf.d/redis.json
+    cp examples/redis.json.example /etc/sensu/conf.d/redis.json
 
     # Create Sensu API configuration file
-    cp api.json.example /etc/sensu/conf.d/api.json
+    cp examples/api.json.example /etc/sensu/conf.d/api.json
 
     chmod a+r /etc/sensu/conf.d/*
     
@@ -180,7 +182,7 @@ install_uchiwa() {
     esac
 
     # Create Uchiwa configuration file
-    cp uchiwa.json.example /etc/sensu/uchiwa.json
+    cp examples/uchiwa.json.example /etc/sensu/uchiwa.json
     chmod a+r /etc/sensu/uchiwa.json
 
     # Enable Uchiwa service when server boot
@@ -208,12 +210,12 @@ install_sensu_metrics_relay() {
 
     git clone git://github.com/opower/sensu-metrics-relay.git /usr/src/sensu-metrics-relay
     cp -R /usr/src/sensu-metrics-relay/lib/sensu/extensions/* /etc/sensu/extensions
-    cp relay.json.example /etc/sensu/conf.d/relay.json
+    cp examples/relay.json.example /etc/sensu/conf.d/relay.json
 }
 
-generate_ssl_certificate
-install_rabbitmq
-install_redis
+# generate_ssl_certificate
+# install_rabbitmq
+# install_redis
 install_sensu
 install_uchiwa
 install_sensu_metrics_relay
