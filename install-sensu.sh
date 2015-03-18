@@ -32,14 +32,6 @@ install_rabbitmq() {
             apt-get install rabbitmq-server
         ;;
         'CENTOS')
-            if [ $CENTOS_VERSION == 6 ]; then
-                rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-            elif [ $CENTOS_VERSION == 7 ]; then
-                rpm -Uvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
-            else
-                sleep 1
-            fi
-
             yum install -y erlang
             rpm --import http://www.rabbitmq.com/rabbitmq-signing-key-public.asc
             
