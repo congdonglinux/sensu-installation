@@ -86,6 +86,9 @@ configure_graphite() {
     # directory. Or, you'll get some Perminssion denied error in "/var/log/httpd/error_log"
     if [ $DIST == 'CENTOS' ]; then
         semanage fcontext -a -t var_log_t /opt/graphite/storage/log
+        restorecon -v /opt/graphite/storage/log
+        semanage fcontext -a -t httpd_log_t /opt/graphite/storage/log/webapp
+        restorecon -v /opt/graphite/storage/log/webapp
     fi
 
     # Substitue Django root directory
@@ -182,12 +185,12 @@ configure_carbon() {
            chmod 755 /usr/lib/systemd/scripts/carbon.sh
            cp examples/carbon.service.example /usr/lib/systemd/system/carbon.service
            systemctl start carbon.service
-
+           systemctl enable carbon.service
         ;;
     esac
 }
 
-resolve_dependency
-install_graphite
+# resolve_dependency
+# install_graphite
 configure_graphite
 configure_carbon
