@@ -32,6 +32,7 @@ resolve_dependency() {
             apt-get install -y build-essential
             apt-get install -y python-cairo 
             apt-get install -y memcached
+            apt-get install -y expect
         ;;
         'CENTOS')
             yum install -y python-pip 
@@ -50,6 +51,7 @@ resolve_dependency() {
             yum install -y cairo-devel
             yum install -y rrdtool-devel
             yum install -y gcc gcc-c++
+            yum install -y expect
         ;;
     esac
 
@@ -150,6 +152,7 @@ configure_graphite() {
     python /opt/graphite/webapp/graphite/manage.py syncdb --noinput
     python /opt/graphite/webapp/graphite/manage.py createsuperuser --username="root" --email="" --noinput
 
+    # Change password
     expect << EOF
         spawn python /opt/graphite/webapp/graphite/manage.py changepassword "root"
         expect "Password: "
