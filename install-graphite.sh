@@ -87,10 +87,14 @@ configure_graphite() {
     # "/opt/graphite/storage/log", so, you should change the context of that 
     # directory. Or, you'll get some Perminssion denied error in "/var/log/httpd/error_log"
     if [ $DIST == 'CENTOS' ]; then
+        semanage fcontext -a -t httpd_sys_rw_content_t /opt/graphite/storage
+        restorecon -v /opt/graphite/storage
         semanage fcontext -a -t var_log_t /opt/graphite/storage/log
         restorecon -v /opt/graphite/storage/log
         semanage fcontext -a -t httpd_log_t /opt/graphite/storage/log/webapp
         restorecon -v /opt/graphite/storage/log/webapp
+
+        setsebool -P httpd_unified 1
     fi
 
     # Substitue Django root directory
@@ -150,7 +154,7 @@ configure_graphite() {
     # Configure Whisper storage
     chmod u+x $GRAPHITE_ROOT/webapp/graphite/manage.py
     python /opt/graphite/webapp/graphite/manage.py syncdb --noinput
-    python /opt/graphite/webapp/graphite/manage.py createsuperuser --username="root" --email="" --noinput
+    python /opt/graphite/webapp/graphite/manage.py createsuperuser --username="root" --email="example@example.com" --noinput
 
     # Change password
     expect << EOF
@@ -193,7 +197,7 @@ configure_carbon() {
     esac
 }
 
-# resolve_dependency
-# install_graphite
+resolve_dependency
+install_graphite
 configure_graphite
 configure_carbon
