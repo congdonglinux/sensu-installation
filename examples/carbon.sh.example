@@ -13,8 +13,13 @@ case "$1" in
     /opt/graphite/bin/carbon-cache.py stop
     /opt/graphite/bin/carbon-aggregator.py stop
     ;;
-  *)
-    echo "Usage: /opt/graphite/bin/carbon-aggregator.py {start|stop|status}"
+  status)
+    /opt/graphite/bin/carbon-relay.py status
+    /opt/graphite/bin/carbon-cache.py status
+    /opt/graphite/bin/carbon-aggregator.py status
+    ;;
+  *) 
+    echo "Usage: $0 {start|stop|status}"
     exit 1
     ;;
 esac

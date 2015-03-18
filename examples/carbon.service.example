@@ -1,0 +1,11 @@
+[Unit]
+Description=Carbon daemon
+
+[Service]
+Type=oneshot
+ExecStart=/usr/lib/systemd/scripts/carbon.sh start
+ExecStop=/usr/lib/systemd/scripts/carbon.sh stop
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
