@@ -13,15 +13,15 @@ function is_empty_string() {
 }
 
 function notify() {
-    echo -e "\033[1;32m\[NOTICE\] ${1}\033[0m" 1>&2
+    echo -e "\033[1;32m[NOTICE] ${1}\033[0m" 1>&2
 }
 
 function warn() {
-    echo -e "\033[1;33m\[WARNNING\] ${1}\033[0m" 1>&2
+    echo -e "\033[1;33m[WARNING] ${1}\033[0m" 1>&2
 }
 
 function error() {
-    echo -e "\033[1;31m\[ERROR\] ${1}\033[0m" 1>&2
+    echo -e "\033[1;31m[ERROR] ${1}\033[0m" 1>&2
 }
 
 function validate_url() {
