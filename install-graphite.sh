@@ -1,16 +1,5 @@
 # !/bin/bash
  
-if [ `whoami` != "root" ] ; then
-    echo "WARNING: You must switch to root to execute this script."
-    exit 255
-fi
-
-# Include general functions
-source bash-common-functions.sh
-
-# Identify the OS
-identify_os
-
 # Constants
 GRAPHITE_ROOT='/opt/graphite'
 GRAPHITE_CONF_DIR='/opt/graphite/conf'
@@ -147,10 +136,6 @@ configure_graphite() {
     sed -i 's/#LOG_DIR/LOG_DIR/g' $GRAPHITE_WEBAPP_CONF
     sed -i 's/#INDEX_FILE/INDEX_FILE/g' $GRAPHITE_WEBAPP_CONF
 
-    echo $APACHE_USER
-    chown -R $APACHE_USER:$APACHE_USER $GRAPHITE_ROOT/storage
-    chmod -R a+w $GRAPHITE_ROOT/storage
-
     # Configure Whisper storage
     chmod u+x $GRAPHITE_ROOT/webapp/graphite/manage.py
     python /opt/graphite/webapp/graphite/manage.py syncdb --noinput
@@ -165,6 +150,9 @@ configure_graphite() {
         send -- "123456\r"
         expect eof
 EOF
+
+    chown -R $APACHE_USER:$APACHE_USER $GRAPHITE_ROOT/storage
+    chmod -R a+w $GRAPHITE_ROOT/storage
 
     case $DIST in
         'DEBIAN')
@@ -185,6 +173,7 @@ configure_carbon() {
             cp examples/carbon.sh.example /etc/init.d/carbon.sh
             chmod 755 /etc/init.d/carbon.sh
             update-rc.d carbon.sh defaults
+            service carbon.sh start
         ;;
         'CENTOS')
            mkdir -p /usr/lib/systemd/scripts
@@ -196,8 +185,3 @@ configure_carbon() {
         ;;
     esac
 }
-
-resolve_dependency
-install_graphite
-configure_graphite
-configure_carbon
