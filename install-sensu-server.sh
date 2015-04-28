@@ -11,7 +11,7 @@ source bash-common-functions.sh
 # Identify the OS
 identify_os
 
-RABBITMQ_ADDR="$(ifconfig eth0 | grep 'inet' | awk -F' ' '{print $2}' | awk -F':' '{print $2}')"
+RABBITMQ_ADDR="$(ifconfig em1 | grep 'inet' | awk -F' ' '{print $2}' | awk -F':' '{print $2}')"
 RABBITMQ_VHOST="/sensu"
 RABBITMQ_USER="sensu"
 RABBITMQ_PASSWORD="mypass"
@@ -27,7 +27,10 @@ generate_ssl_certificate() {
 
     # Fetch Sensu ssl tool and generates ssl certificates with this tool
     cd /tmp
-    wget "${sensu_ssl_tool_url}"
+    if [ ! -f ${sensu_ssl_tool_name} ]; then
+        wget "${sensu_ssl_tool_url}"
+    fi
+    # notify "${sensu_ssl_tool_url}"
     tar -xf "${sensu_ssl_tool_name}"
     cd "${sensu_ssl_tool_dir}"
     chmod u+x ssl_certs.sh
@@ -46,8 +49,8 @@ generate_ssl_certificate() {
 
     # Save SSL certificates for Sensu clients
     cp client/cert.pem client/key.pem sensu_client_ssl
-    tar cJ sensu_client_ssl -f sensu_client_ssl.tar.xz
-    mv sensu_client_ssl.tar.xz "${ssl_certificate_dir}"
+    tar cz sensu_client_ssl -f sensu_client_ssl.tar.gz
+    mv sensu_client_ssl.tar.gz "${ssl_certificate_dir}"
 
     # clearning temporary files
     rm -rf sensu_client_ssl
@@ -90,12 +93,13 @@ install_rabbitmq() {
         ;;
         'CENTOS')
             # Ensure RabbitMQ would not be blocked by firewall
-            firewall-cmd --permanent --add-port=5672/tcp
-            firewall-cmd --reload
-            setsebool -P nis_enabled 1
+#            firewall-cmd --permanent --add-port=5672/tcp
+#            firewall-cmd --reload
+#            setsebool -P nis_enabled 1
 
             chkconfig rabbitmq-server on
-            systemctl start rabbitmq-server.service
+            # systemctl start rabbitmq-server.service
+            service rabbitmq-server start
         ;;
     esac
 
@@ -115,9 +119,10 @@ install_redis() {
         ;;
         
         'CENTOS')
-            yum install -y redis
+            yum install -y  redis
             chkconfig redis on
-            systemctl start redis.service
+            # systemctl start redis.service
+            service redis start
         ;;
     esac
 }
@@ -141,7 +146,7 @@ install_sensu_server() {
             sed -i "s/\$releasever/${CENTOS_VERSION}/g" /etc/yum.repos.d/sensu.repo
             sed -i "s/\$basearch/${KERNELARCH}/g" /etc/yum.repos.d/sensu.repo
 
-            yum install -y sensu
+            yum install -y  sensu
         ;;
     esac
 
@@ -179,8 +184,10 @@ install_sensu_server() {
         'CENTOS')
             chkconfig sensu-server on
             chkconfig sensu-api on
-            systemctl start sensu-server.service
-            systemctl start sensu-api.service
+            # systemctl start sensu-server.service
+            # systemctl start sensu-api.service
+            service sensu-server start
+            service sensu-api start
         ;;
     esac
 }
@@ -191,7 +198,7 @@ install_uchiwa() {
             apt-get install -y uchiwa
         ;;
         'CENTOS')
-            yum install -y uchiwa
+            yum install -y  uchiwa
         ;;
     esac
 
@@ -208,7 +215,8 @@ install_uchiwa() {
         ;;
         'CENTOS')
             chkconfig uchiwa on
-            systemctl start uchiwa.service
+            # systemctl start uchiwa.service
+            service uchiwa start
         ;;
     esac
 }
@@ -301,16 +309,16 @@ function main() {
 
     generate_ssl_certificate "${ssl_certificate_dir}" "${sensu_ssl_tool_url}"
     install_rabbitmq
-    install_redis
-    install_sensu_server
-    install_uchiwa
-    install_sensu_metrics_relay
+#    install_redis
+#    install_sensu_server
+#    install_uchiwa
+#    install_sensu_metrics_relay
 
 
-    resolve_dependency
-    install_graphite
-    configure_graphite
-    configure_carbon
+#    resolve_dependency
+#    install_graphite
+#    configure_graphite
+#    configure_carbon
 }
 
 main "$@"

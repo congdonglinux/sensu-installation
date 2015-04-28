@@ -4,9 +4,9 @@ KERNELARCH=$(uname -p)
 
 configure_centos_epel_repo() {
     if [ $CENTOS_VERSION == 6 ]; then
-        rpm -Uvh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-    release-6-8.noarch.rpm
+        rpm -iUvh http://download.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
     elif [ $CENTOS_VERSION == 7 ]; then
-        rpm -iUvh http://dl.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
+        rpm -iUvh http://download.fedoraproject.org/pub/epel/7/x86_64/e/epel-release-7-5.noarch.rpm
     else
         sleep 1
     fi

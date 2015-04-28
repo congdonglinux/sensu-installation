@@ -75,16 +75,16 @@ configure_graphite() {
     # On CentOS, the SELinux would prevent httpd to access log file in
     # "/opt/graphite/storage/log", so, you should change the context of that 
     # directory. Or, you'll get some Perminssion denied error in "/var/log/httpd/error_log"
-    if [ $DIST == 'CENTOS' ]; then
-        semanage fcontext -a -t httpd_sys_rw_content_t /opt/graphite/storage
-        restorecon -v /opt/graphite/storage
-        semanage fcontext -a -t var_log_t /opt/graphite/storage/log
-        restorecon -v /opt/graphite/storage/log
-        semanage fcontext -a -t httpd_log_t /opt/graphite/storage/log/webapp
-        restorecon -v /opt/graphite/storage/log/webapp
-
-        setsebool -P httpd_unified 1
-    fi
+#    if [ $DIST == 'CENTOS' ]; then
+#        semanage fcontext -a -t httpd_sys_rw_content_t /opt/graphite/storage
+#        restorecon -v /opt/graphite/storage
+#        semanage fcontext -a -t var_log_t /opt/graphite/storage/log
+#        restorecon -v /opt/graphite/storage/log
+#        semanage fcontext -a -t httpd_log_t /opt/graphite/storage/log/webapp
+#        restorecon -v /opt/graphite/storage/log/webapp
+#
+#        setsebool -P httpd_unified 1
+#    fi
 
     # Substitue Django root directory
     DJANGO_ROOT=`pip show django | grep 'Location' | sed 's/Location:\ //g'`
@@ -161,8 +161,10 @@ EOF
             service apache2 restart
         ;;
         'CENTOS')
-            systemctl enable httpd
-            systemctl start httpd
+            # systemctl enable httpd
+            # systemctl start httpd
+            chkconfig httpd on
+            service httpd start
         ;;
     esac
 }
@@ -180,8 +182,11 @@ configure_carbon() {
            cp examples/carbon.sh.example /usr/lib/systemd/scripts/carbon.sh
            chmod 755 /usr/lib/systemd/scripts/carbon.sh
            cp examples/carbon.service.example /usr/lib/systemd/system/carbon.service
-           systemctl start carbon.service
-           systemctl enable carbon.service
+           # systemctl start carbon.service
+           # systemctl enable carbon.service
+           chkconfig --add carbon
+           chkconfig carbon on
+           service carbon start
         ;;
     esac
 }

@@ -54,7 +54,7 @@ configure_sensu_client() {
     # Extract RabbitMQ SSL certificates into '/tmp'
     local cert_extract_dir="/tmp/sensu_ssl_cert/"
     mkdir -p "${cert_extract_dir}"
-    tar xJf "${ssl_certificate}" -C "${cert_extract_dir}"
+    tar xzf "${ssl_certificate}" -C "${cert_extract_dir}"
 
     mkdir -p "${SENSU_SSL_DIR}"
     cp "$(find ${cert_extract_dir} -name "key.pem")" "${SENSU_SSL_DIR}"
