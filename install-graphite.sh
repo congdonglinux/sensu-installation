@@ -161,10 +161,10 @@ EOF
             service apache2 restart
         ;;
         'CENTOS')
-            # systemctl enable httpd
-            # systemctl start httpd
-            chkconfig httpd on
-            service httpd start
+            systemctl enable httpd
+            systemctl start httpd
+            # chkconfig httpd on
+            # service httpd start
         ;;
     esac
 }
@@ -182,11 +182,11 @@ configure_carbon() {
            cp examples/carbon.sh.example /usr/lib/systemd/scripts/carbon.sh
            chmod 755 /usr/lib/systemd/scripts/carbon.sh
            cp examples/carbon.service.example /usr/lib/systemd/system/carbon.service
-           # systemctl start carbon.service
-           # systemctl enable carbon.service
-           chkconfig --add carbon
-           chkconfig carbon on
-           service carbon start
+           systemctl start carbon.service
+           systemctl enable carbon.service
+           # chkconfig --add carbon
+           # chkconfig carbon on
+           # service carbon start
         ;;
     esac
 }

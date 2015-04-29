@@ -47,7 +47,7 @@ configure_sensu_client() {
     
     ssl_certificate="${1}"
     sensu_client_name="${2}"
-    sensu_client_ip_addr=$(ifconfig eth0 | grep 'inet addr' | awk -F " " '{print $2}' | awk -F ":" '{print $2}')
+    sensu_client_ip_addr=$(ifconfig eth0 | grep 'inet' | head -1 | awk -F " " '{print $2}' | grep -E '[0-9\.]*')
 
     # Extract RabbitMQ SSL certificates into '/tmp'
     local cert_extract_dir="/tmp/sensu_ssl_cert/"
@@ -91,7 +91,8 @@ configure_sensu_client() {
         ;;
         'CENTOS')
             chkconfig sensu-client on
-            systemctl start sensu-client.service
+            # systemctl start sensu-client.service
+            service sensu-client start
         ;;
     esac
 }
@@ -169,8 +170,8 @@ function main() {
         error "${ssl_certificate} is not exist!\n"
         exit 1
     else
-        if [[ "$(file "${ssl_certificate}" | awk -F ":" '{print $2}')" != " XZ compressed data" ]]; then
-            error "${ssl_certificate} is not a XZ compressed file!\n"
+        if [[ "$(file "${ssl_certificate}" | awk -F ":" '{print $2}'| awk -F "," '{print $1}')" != " gzip compressed data" ]]; then
+            error "${ssl_certificate} is not a gzip compressed file!\n"
             exit 1
         fi
     fi

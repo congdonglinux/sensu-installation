@@ -11,7 +11,7 @@ source bash-common-functions.sh
 # Identify the OS
 identify_os
 
-RABBITMQ_ADDR="$(ifconfig em1 | grep 'inet' | awk -F' ' '{print $2}' | awk -F':' '{print $2}')"
+RABBITMQ_ADDR="$(ifconfig em1 | grep 'inet' | head -1 | awk -F' ' '{print $2}' | grep -E '[0-9\.]*')"
 RABBITMQ_VHOST="/sensu"
 RABBITMQ_USER="sensu"
 RABBITMQ_PASSWORD="mypass"
@@ -98,8 +98,8 @@ install_rabbitmq() {
 #            setsebool -P nis_enabled 1
 
             chkconfig rabbitmq-server on
-            # systemctl start rabbitmq-server.service
-            service rabbitmq-server start
+            systemctl start rabbitmq-server.service
+            # service rabbitmq-server start
         ;;
     esac
 
@@ -121,8 +121,8 @@ install_redis() {
         'CENTOS')
             yum install -y  redis
             chkconfig redis on
-            # systemctl start redis.service
-            service redis start
+            systemctl start redis.service
+            # service redis start
         ;;
     esac
 }
@@ -161,7 +161,7 @@ EOF
     chmod a+r /etc/sensu/conf.d/rabbitmq.json
 
     # Create client configuration file
-    cp examples/client.json.example /etc/sensu/conf.d/client.json
+    # cp examples/client.json.example /etc/sensu/conf.d/client.json
 
     # Create Redis configuration file
     cp examples/redis.json.example /etc/sensu/conf.d/redis.json
@@ -182,10 +182,10 @@ EOF
         'CENTOS')
             chkconfig sensu-server on
             chkconfig sensu-api on
-            # systemctl start sensu-server.service
-            # systemctl start sensu-api.service
-            service sensu-server start
-            service sensu-api start
+            systemctl start sensu-server.service
+            systemctl start sensu-api.service
+            # service sensu-server start
+            # service sensu-api start
         ;;
     esac
 }
@@ -213,8 +213,8 @@ install_uchiwa() {
         ;;
         'CENTOS')
             chkconfig uchiwa on
-            # systemctl start uchiwa.service
-            service uchiwa start
+            systemctl start uchiwa.service
+            # service uchiwa start
         ;;
     esac
 }
@@ -307,16 +307,16 @@ function main() {
 
     generate_ssl_certificate "${ssl_certificate_dir}" "${sensu_ssl_tool_url}"
     install_rabbitmq
-#    install_redis
-#    install_sensu_server
-#    install_uchiwa
-#    install_sensu_metrics_relay
+    install_redis
+    install_sensu_server
+    install_uchiwa
+    install_sensu_metrics_relay
 
 
-#    resolve_dependency
-#    install_graphite
-#    configure_graphite
-#    configure_carbon
+    resolve_dependency
+    install_graphite
+    configure_graphite
+    configure_carbon
 }
 
 main "$@"
