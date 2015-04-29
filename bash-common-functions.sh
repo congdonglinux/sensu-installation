@@ -19,7 +19,8 @@ identify_os() {
         DIST='DEBIAN'
     elif [ -f /etc/centos-release ] ; then
         DIST='CENTOS'
-        CENTOS_VERSION=`awk '{print $4}' /etc/centos-release | sed 's/\..*//g'`
+        # CENTOS_VERSION=`awk '{print $4}' /etc/centos-release | sed 's/\..*//g'`
+        CENTOS_VERSION=`grep -o -E '[0-9\.]*' /etc/centos-release | sed 's/\..*//g'`
         configure_centos_epel_repo
     else
         echo "This script is only intended to run on Ubuntu or CentOS"
