@@ -136,15 +136,13 @@ install_sensu_server() {
             apt-get install -y sensu
         ;;
         'CENTOS')
-            cp examples/sensu.repo.example /etc/yum.repos.d/sensu.repo
-
-            # Sensu only support Centos 5 and Centos 6
-            if [ $CENTOS_VERSION == 7 ]; then
-                CENTOS_VERSION=6
-            fi
-
-            sed -i "s/\$releasever/${CENTOS_VERSION}/g" /etc/yum.repos.d/sensu.repo
-            sed -i "s/\$basearch/${KERNELARCH}/g" /etc/yum.repos.d/sensu.repo
+            cat > /etc/yum.repos.d/sensu.repo <<EOF
+[sensu]
+name=sensu
+baseurl=http://repos.sensuapp.org/yum/el/${KERNELARCH}/
+gpgcheck=0
+enabled=1
+EOF
 
             yum install -y  sensu
         ;;
