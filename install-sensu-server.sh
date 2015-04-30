@@ -15,6 +15,7 @@ RABBITMQ_ADDR="$(ifconfig em1 | grep 'inet' | head -1 | awk -F' ' '{print $2}' |
 RABBITMQ_VHOST="/sensu"
 RABBITMQ_USER="sensu"
 RABBITMQ_PASSWORD="mypass"
+embedded_ruby_env="/opt/sensu/embedded/bin"
 
 generate_ssl_certificate() {
     ssl_certificate_dir="${1}"
@@ -190,6 +191,14 @@ EOF
     esac
 }
 
+function setup_ruby_env() {
+    if [[ ! $PATH == *"${embedded_ruby_path}"* ]]; then
+        cat > /etc/profile.d/sensu-ruby-env.sh <<EOF
+export PATH=$embedded_ruby_path:$PATH
+EOF
+    fi
+}
+
 install_uchiwa() {
     case $DIST in
         'DEBIAN')
@@ -309,6 +318,7 @@ function main() {
     install_rabbitmq
     install_redis
     install_sensu_server
+    setup_ruby_env
     install_uchiwa
     install_sensu_metrics_relay
 

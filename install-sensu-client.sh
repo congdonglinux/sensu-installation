@@ -15,6 +15,7 @@ identify_os
 SENSU_RABBITMQ_CONFIG="/etc/sensu/conf.d/rabbitmq.json"
 SENSU_CLIENT_CONFIG="/etc/sensu/conf.d/client.json"
 SENSU_SSL_DIR="/etc/sensu/ssl"
+embedded_ruby_path="/opt/sensu/embedded/bin"
 
 install_sensu_client() {
     notify "STEP 01: Installing Sensu Client ..."    
@@ -95,6 +96,14 @@ configure_sensu_client() {
             service sensu-client start
         ;;
     esac
+}
+
+function setup_ruby_env() {
+    if [[ ! $PATH == *"$embedded_ruby_path"* ]]; then
+        cat > /etc/profile.d/sensu-ruby-env.sh <<EOF
+export PATH=$embedded_ruby_path:$PATH
+EOF
+    fi
 }
 
 function display_usage() {
@@ -178,6 +187,7 @@ function main() {
 
     install_sensu_client 
     configure_sensu_client "${ssl_certificate}" "${sensu_client_name}"
+    setup_ruby_env
 }
 
 main "$@"
