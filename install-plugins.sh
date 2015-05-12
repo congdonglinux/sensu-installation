@@ -4,16 +4,22 @@ source bash-common-functions.sh
  
 # Constants
 sensu_embedded_ruby="/opt/sensu/embedded/bin"
-plugins_cache_dir="/tmp/sensu-community-plugins/"
 taobao_gem_mirror="https://ruby.taobao.org/"
+
+sensu_conf_dir="/etc/sensu"
+handler_scripts_dir="/etc/sensu/handlers"
+check_scripts_dir="/etc/sensu/plugins"
+plugin_def_dir="/etc/sensu/conf.d"
 
 # Variables
 plugin_type=""
 plugin_name=""
 plugin_url=""
 plugin_args=""
+script_path=""
 
 function set_ruby_env() {
+    sed -i "/EMBEDDED_RUBY=/s/false/true/" /etc/default/sensu
     if [[ ! $PATH == *"$sensu_embedded_ruby"* ]]; then
         cat > /etc/profile.d/sensu-ruby-env.sh <<EOF
 export PATH=$sensu_embedded_ruby:$PATH
@@ -42,21 +48,40 @@ function get_plugin() {
         local plugin_category="$(echo "$plugin_url" | awk -F "/" '{print $(NF-1)}')"
         if [[ $plugin_category = "plugins" ]] || [[ $plugins_category = "handlers" ]]; then
             plugin_category=""
+            _plugin_type=$plugin_category
+        else
+            _plugin_type="$(echo "plugin_url" | awk -F "/" '{print $(NF-2)}')"
         fi
 
-        local script_name="$(echo "$file" | awk -F "/" '{print $NF}')"
-        if [[ -f ${plugins_cache_dir}$script_name ]]; then
-            rm -f ${plugins_cache_dir}$script_name
+        if [[ $_plugin_type = "plugins" ]] && [[ ! $plugin_type = "check" ]]; then
+            error 'this plugin is not a check, please verify'
+            exit 1
         fi
 
-        wget -O ${plugins_cache_dir}${script_name} $file
+        if [[ $_plugin_type = "handlers" ]] && [[ ! $plugin_type = "handler" ]]; then
+            error 'this plugin is not a handler, please verify'
+            exit 1
+        fi
+
+        local script_name="$(echo "$url" | awk -F "/" '{print $NF}')"
+#        if [[ -f ${plugins_cache_dir}$script_name ]]; then
+#            rm -f ${plugins_cache_dir}$script_name
+#        fi
+
+        if [[ $(is_empty_string "${plugin_category}") = 'true' ]]; then
+            script_path="${sensu_conf_dir}/${_plugin_type}/${plugin_category}/${script_name}"
+        else
+            script_path="${sensu_conf_dir}/${_plugin_type}/${script_name}"
+        fi
+
+        wget -O $script_path $url
         # if there is a json configuration file, just download it too!
 
         if [[ ! $? == 0 ]]; then
             error "download $script_name failed, please check url"
         fi
 
-        chmod 755 ${plugins_cache_dir}${plugin_name}
+        chmod 755 ${script_path}
     # done
 }
 
@@ -75,7 +100,7 @@ function config_plugin() {
     cat > check.sample <<EOF
 {
   "checks": {
-    "$check_name": {
+    "$plugin_name": {
       "handlers": [ "$handlers" ],
       "command": "$check_plugin $args",
       "interval": $interval,
@@ -84,7 +109,18 @@ function config_plugin() {
   }
 }
 EOF
+
+    cat > handler.sample <<EOF
+{
+  "handlers": {
+    "$plugin_name": {
+      "type": "pipe",
+      "command": "$plugin_path $plugin_args"
+    }
+  } 
 } 
+EOF
+}
 
 function display_usage() {
     local script_name="$(basename "${BASH_SOURCE[0]}")"
@@ -103,6 +139,10 @@ function display_usage() {
 }
 
 function main() {
+    set_ruby_env
+
+    tweak_gem_source
+
     working_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
     source "${working_dir}/util.sh" || exit 1
@@ -178,6 +218,9 @@ function main() {
         # expect "this plugin donot need any arguments? (y/N)"
     fi 
 
+    get_plugin "${plugin_url}"
+
+    resolve_deps "${script_path}"
     
 }
 
