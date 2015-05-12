@@ -27,7 +27,7 @@ EOF
     fi
 }
 
-function tweak_gem_soure() {
+function tweak_gem_source() {
     local official_gem_source="$(gem sources -l | tail -1)"
     # echo $official_gem_source
     if [[ ! $official_gem_source = $taobao_gem_mirror ]]; then
@@ -40,18 +40,20 @@ function tweak_gem_soure() {
 function get_plugin() {
     local plugin_url=$1
 
-    if [[ ! -d $plugins_cache_dir ]]; then
-        mkdir -p $plugins_cache_dir
-    fi
+    echo $plugin_url
 
     # for file in $plugin_list; do
         local plugin_category="$(echo "$plugin_url" | awk -F "/" '{print $(NF-1)}')"
+        echo $plugin_category
+
         if [[ $plugin_category = "plugins" ]] || [[ $plugins_category = "handlers" ]]; then
             plugin_category=""
             _plugin_type=$plugin_category
         else
-            _plugin_type="$(echo "plugin_url" | awk -F "/" '{print $(NF-2)}')"
+            _plugin_type="$(echo "$plugin_url" | awk -F "/" '{print $(NF-2)}')"
         fi
+
+        echo $_plugin_type
 
         if [[ $_plugin_type = "plugins" ]] && [[ ! $plugin_type = "check" ]]; then
             error 'this plugin is not a check, please verify'
@@ -63,7 +65,8 @@ function get_plugin() {
             exit 1
         fi
 
-        local script_name="$(echo "$url" | awk -F "/" '{print $NF}')"
+        local script_name="$(echo "$plugin_url" | awk -F "/" '{print $NF}')"
+        echo $script_name
 #        if [[ -f ${plugins_cache_dir}$script_name ]]; then
 #            rm -f ${plugins_cache_dir}$script_name
 #        fi
@@ -74,7 +77,9 @@ function get_plugin() {
             script_path="${sensu_conf_dir}/${_plugin_type}/${script_name}"
         fi
 
-        wget -O $script_path $url
+        echo $script_path
+
+        wget -O $script_path $plugin_url
         # if there is a json configuration file, just download it too!
 
         if [[ ! $? == 0 ]]; then
@@ -132,7 +137,7 @@ function display_usage() {
     echo    "    --type    is this plugin a handler or a check, available value: handler, check"
     echo    "    --name    what will this plugin be called?"
     echo    "    --url     URL to this plugin on GitHub. For example, https://raw.githubusercontent.com/sensu/sensu-community-plugins/master/plugins/processes/check-procs.rb"
-    echo    "    --arg     arguments for this plugin to run, a string. For example, \"-p crond -C 1\""
+    echo    "    --args    arguments for this plugin to run, a string. For example, \"-p crond -C 1\""
     echo -e "\033[0m"
 
     exit ${1}
@@ -218,10 +223,12 @@ function main() {
         # expect "this plugin donot need any arguments? (y/N)"
     fi 
 
+    echo $plugin_url
+
     get_plugin "${plugin_url}"
 
     resolve_deps "${script_path}"
     
 }
 
-# main "$@"
+main "$@"
