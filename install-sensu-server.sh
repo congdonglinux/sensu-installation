@@ -21,8 +21,16 @@ generate_ssl_certificate() {
     ssl_certificate_dir="${1}"
 
     echo "Generating SSL certificate for RabbitMQ..."
+
+    echo "Acquire latest Sensu version"
+    latest_sensu_version=`curl -s https://sensuapp.org/docs/ --list-only | grep -o -e "/docs/[0-9.]*/overview" | head -n1 | grep -o -e "[0-9.]*"`
+    sensu_ssl_tool_url='http://sensuapp.org/docs/'${latest_sensu_version}/files/sensu_tool.tar
+
+    if [[ "$(validate_url "${sensu_ssl_tool_url}")" = 'false' ]]; then
+        error 'invalid url for Sensu ssl tool! seems official site map was changed, you need to change this script and run again.'
+        exit 1
+    fi
     
-    sensu_ssl_tool_url="${2}"
     sensu_ssl_tool_name="$(echo "${sensu_ssl_tool_url}" | awk -F "/" '{print $NF}')"
     sensu_ssl_tool_dir="$(echo "${sensu_ssl_tool_name}" | awk -F "." '{print $1}')"
 
@@ -268,7 +276,6 @@ function main() {
         case "$1" in
             --help)
                 display_usage 0
-
                 ;;
             --cert)
                 shift
@@ -278,16 +285,6 @@ function main() {
                 fi
 
                 ;;
-
-            --tool)
-                shift
-                
-                if [[ $# -gt 0 ]]; then
-                    local sensu_ssl_tool_url="$(trim_string "${1}")"
-                fi
-
-                ;;
-                
             *)
                 shift
                 ;;
@@ -304,17 +301,7 @@ function main() {
         fi
     fi
 
-    if [[ "$(is_empty_string "${sensu_ssl_tool_url}")" = 'true' ]]; then
-        error 'tool url parameter not found!\n'
-        display_usage 0
-    fi
-
-    if [[ "$(validate_url "${sensu_ssl_tool_url}")" = 'false' ]]; then
-        error 'invalid url for Sensu ssl tool!'
-        exit 1
-    fi
-
-    generate_ssl_certificate "${ssl_certificate_dir}" "${sensu_ssl_tool_url}"
+    generate_ssl_certificate "${ssl_certificate_dir}"
     install_rabbitmq
     install_redis
     install_sensu_server
