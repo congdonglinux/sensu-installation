@@ -24,7 +24,7 @@ generate_ssl_certificate() {
 
     echo "Acquire latest Sensu version"
     latest_sensu_version=`curl -s https://sensuapp.org/docs/ --list-only | grep -o -e "/docs/[0-9.]*/overview" | head -n1 | grep -o -e "[0-9.]*"`
-    sensu_ssl_tool_url='http://sensuapp.org/docs/'${latest_sensu_version}/files/sensu_tool.tar
+    sensu_ssl_tool_url='http://sensuapp.org/docs/'${latest_sensu_version}/files/sensu_ssl_tool.tar
 
     if [[ "$(validate_url "${sensu_ssl_tool_url}")" = 'false' ]]; then
         error 'invalid url for Sensu ssl tool! seems official site map was changed, you need to change this script and run again.'
